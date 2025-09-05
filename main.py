@@ -5,20 +5,20 @@ from app import App
 
 
 def show_banner():
-    RED = "\033[91m"
-    RESET = "\033[0m"
+    import pyfiglet
 
-    banner = r"""
-    ____             _                        
-    / ___|  ___   ___| | __ _ _ __   ___ _ __ 
-    \___ \ / _ \ / __| |/ _` | '_ \ / _ \ '__|
-    ___) | (_) | (__| | (_| | | | |  __/ |   
-    |____/ \___/ \___|_|\__,_|_| |_|\___|_|   
-                                            
+    banner = fr"""
+
+    {pyfiglet.figlet_format("SECAGENT", font="slant")}
+                     
     SECAGENT - Penetration Testing Assistant
+
     """
+
+    COLOR = "\033[38;5;46m"
+    RESET = "\033[0m"
     
-    print(f"{RED}{banner}{RESET}", "\n")
+    print(f"{COLOR}{banner}{RESET}")
     
 
 

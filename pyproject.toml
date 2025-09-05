@@ -8,4 +8,5 @@ dependencies = [
     "anthropic>=0.66.0",
     "mcp>=1.13.1",
     "nest-asyncio>=1.6.0",
+    "pyfiglet>=1.0.4",
 ]
