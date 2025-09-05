@@ -1,0 +1,11 @@
+[project]
+name = "secagent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.66.0",
+    "mcp>=1.13.1",
+    "nest-asyncio>=1.6.0",
+]

@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "default-server": {
+      "command": "uv",
+      "args": ["run", "mcpserver.py", "info_gathering"],
+      "cwd": "/Users/stellaz/Workspace/secagent",
+      "env": {
+        "HOME": "/Users/stellaz",
+        "LOGNAME": "stellaz",
+        "PATH": "/Users/stellaz/.npm/_npx/5a9d879542beca3a/node_modules/.bin:/Users/stellaz/Workspace/secagent/node_modules/.bin:/Users/stellaz/Workspace/node_modules/.bin:/Users/stellaz/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/usr/local/Cellar/node@22/22.17.1/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/stellaz/go/bin:/usr/local/opt/node@22/bin:/Users/stellaz/.local/bin:/usr/local/opt/scala@3.3/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/opt/X11/bin:/Library/Apple/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/stellaz/go/bin:/usr/local/opt/node@22/bin:/Users/stellaz/.local/bin:/usr/local/opt/scala@3.3/bin:/Users/stellaz/.cargo/bin:/Users/stellaz/Applications/iTerm.app/Contents/Resources/utilities:/Users/stellaz/.vscode/extensions/ms-python.debugpy-2025.10.0-darwin-x64/bundled/scripts/noConfigScripts",
+        "SHELL": "/bin/zsh",
+        "TERM": "xterm-256color",
+        "USER": "stellaz"
+      }
+    }
+  }
+}
