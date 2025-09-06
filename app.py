@@ -1,6 +1,7 @@
 import anthropic
 import typing
 import json
+from contextlib import AsyncExitStack
 
 import nest_asyncio
 nest_asyncio.apply()
@@ -12,14 +13,11 @@ dotenv.load_dotenv(".env")
 from mcp import ClientSession, StdioServerParameters, stdio_client
 
 
-def load_server_params(server_name: str = "default-server") -> StdioServerParameters:
-    # Load JSON
-    with open("mcpserver.json", "r") as f:
-        config = json.load(f)['mcpServers']
 
-    server_params = StdioServerParameters(**config[server_name])
-    return server_params
-
+class ToolDefinition(typing.TypedDict):
+    name: str
+    description: str
+    input_schema: dict
 
 class App:
 
@@ -28,10 +26,29 @@ class App:
 
     def __init__(self):
         # Initialize session and client objects
-        self.session: typing.Union[ClientSession, None] = None 
+        self.sessions: typing.List[ClientSession] = []
+        self.exit_stack = AsyncExitStack()
         # make sure environmetal variable ANTHROPIC_API_KEY is set
         self.anthropic = anthropic.Anthropic()
-        self.available_tools: typing.List[anthropic.types.ToolUnionParam] = []
+        self.available_tools: typing.List[ToolDefinition] = []
+        self.tool_to_session: typing.Dict[str, ClientSession] = {}
+        
+        print("[+] Initialization is done")
+    
+    async def __aenter__(self):
+        await self._connect_to_servers()
+        print("[+] Connecting to mcp servers ...")
+        return self
+    
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        print("[+] Releaing asychronous resources ...")
+        await self._cleanup()
+        print("[+] Cleaning is done")
+
+    
+    async def _cleanup(self): # new
+        """Cleanly close all resources using AsyncExitStack."""
+        await self.exit_stack.aclose()
 
     async def process_query(self, query: str):
         messages = [{'role': 'user', 'content': query}]
@@ -39,7 +56,7 @@ class App:
             max_tokens=self.MaxTokens,
             model=self.Model,
             messages=messages, # type: ignore
-            tools=self.available_tools,
+            tools=self.available_tools, # type: ignore
         ) # type: ignore
         process_query = True
         while process_query:
@@ -59,8 +76,8 @@ class App:
                     tool_args = content.input
                     tool_name = content.name
                     print(f"Calling tool {tool_name} with args {tool_args}")
-                    
-                    result = await self.session.call_tool(tool_name, arguments=tool_args) # type: ignore
+
+                    result = await self.tool_to_session[tool_name].call_tool(tool_name, arguments=tool_args) # type: ignore
                     messages.append(
                         {
                             "role": "user", 
@@ -76,7 +93,7 @@ class App:
                     response = self.anthropic.messages.create(
                         max_tokens=self.MaxTokens,
                         model=self.Model, 
-                        tools=self.available_tools,
+                        tools=self.available_tools, # type: ignore
                         messages=messages # type: ignore
                     ) 
                     if len(response.content) == 1 and response.content[0].type == "text":
@@ -85,31 +102,43 @@ class App:
         pass
 
 
-    async def connect_to_server_and_run(self):
+    async def _connect_to_server(self, server_name: str, server_config: dict):
             # Create server parameters for stdio connection
-            server_params = load_server_params()
-            async with stdio_client(server_params) as (read, write):
-                async with ClientSession(read, write) as session:
+            server_param = StdioServerParameters(**server_config)
+            client = stdio_client(server_param)
+            (read, write) = await self.exit_stack.enter_async_context(client)
 
-                    self.session = session
-                    # Initialize the connection
-                    await session.initialize()
+            session = await self.exit_stack.enter_async_context(ClientSession(read, write))
+            # Initialize the connection
+            await session.initialize()
+
+            self.sessions.append(session)
+
+            # List available tools
+            response = await session.list_tools()
+            
+            tools = response.tools
+            print(f"\nConnected to server {server_name} with tools:", [tool.name for tool in tools])
+            
+            for tool in tools:
+                self.tool_to_session[tool.name] = session
+                self.available_tools.append(
+                    {
+                        "name": tool.name,
+                        "description": tool.description, # type: ignore
+                        "input_schema": tool.inputSchema
+                    }
+                )
+                
+    
+    async def _connect_to_servers(self): 
+        # Load JSON
+        with open("server_config.json", "r") as f:
+            data: typing.Dict = json.load(f)['mcpServers']
         
-                    # List available tools
-                    response = await session.list_tools()
-                    
-                    tools = response.tools
-                    print("\nConnected to server with tools:", [tool.name for tool in tools])
-                    
-                    self.available_tools = [ # type: ignore
-                        dict(
-                            name=tool.name,
-                            description=tool.description,
-                            input_schema=tool.inputSchema
-                        ) for tool in response.tools
-                    ]
-        
-                    await self.loop()
+        for server_name, server_config in data.items():
+            await self._connect_to_server(server_name, server_config)
+
 
     async def loop(self):
         """Run an interactive chat loop"""

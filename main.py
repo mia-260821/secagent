@@ -24,9 +24,10 @@ def show_banner():
 
 async def main():
     show_banner()
-    await App().connect_to_server_and_run()
-  
 
+    async with App() as app:
+        await app.loop()
+        
 
 if __name__ == "__main__":
     asyncio.run(main())
