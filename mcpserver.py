@@ -13,10 +13,12 @@ if __name__ == "__main__":
 
     if mcp_name == "info_gathering":
         from tools.info_gathering import mcp
-        mcp.run(transport="stdio")
+        mcp.run(transport="streamable-http")
+
     elif mcp_name == "kali_terminal":
         from tools.base import mcp
         mcp.run(transport="stdio")
+
     else:
         raise Exception("invalid mcp name")
 

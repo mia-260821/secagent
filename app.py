@@ -10,14 +10,14 @@ nest_asyncio.apply()
 import dotenv
 dotenv.load_dotenv(".env")
 
-from mcp import ClientSession, StdioServerParameters, stdio_client
-
+from mcp import ClientSession
 
 
 class ToolDefinition(typing.TypedDict):
     name: str
     description: str
     input_schema: dict
+
 
 class App:
 
@@ -103,12 +103,22 @@ class App:
 
 
     async def _connect_to_server(self, server_name: str, server_config: dict):
-            # Create server parameters for stdio connection
-            server_param = StdioServerParameters(**server_config)
-            client = stdio_client(server_param)
-            (read, write) = await self.exit_stack.enter_async_context(client)
-
+            # Create MCP client
+            if server_config["type"] == "stdio":
+                from mcp import StdioServerParameters, stdio_client
+                client = stdio_client(StdioServerParameters(**server_config))
+            elif server_config["type"] == "streamable-http":
+                from mcp.client.streamable_http import streamablehttp_client
+                client = streamablehttp_client(url=server_config["url"])
+            elif server_config["type"] == "sse":
+                from mcp.client.sse import sse_client
+                client = sse_client(url=server_config["url"], headers=server_config.get("headers"))
+            else:
+                raise Exception(f"Invalid server type {server_config["type"]}")
+            
+            (read, write, _) = await self.exit_stack.enter_async_context(client) # type: ignore
             session = await self.exit_stack.enter_async_context(ClientSession(read, write))
+
             # Initialize the connection
             await session.initialize()
 
