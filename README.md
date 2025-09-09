@@ -5,13 +5,13 @@
 Start mcp server
 
 ```bash
-uv run mcpserver.py info_gathering
+uv run mcpserver.py kali_terminal 0.0.0.0:8000
 ```
 
 Start mcp server inspector
 
 ```bash
-npx @modelcontextprotocol/inspector uv run mcpserver.py info_gathering
+npx @modelcontextprotocol/inspector uv run mcpserver.py kali_terminal
 ```
 
 ## Start Application

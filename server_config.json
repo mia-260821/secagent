@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "information-gathering": {
+    "kali_terminal": {
       "type": "streamable-http",
-      "url": "http://localhost:8000/mcp",
+      "url": "http://192.168.56.10:8000/mcp",
       "note": "For Streamable HTTP connections, add this URL directly in your MCP Client"
     }
   }
