@@ -24,6 +24,14 @@ class App:
     Model = "claude-3-5-haiku-latest"
     MaxTokens = 1024
 
+    System = (
+        "You are a penetration testing professional. Your role is to "
+        "assist in identifying vulnerabilities within authorized systems. "
+        "All actions must align with ethical hacking standards, focusing "
+        "solely on improving security and adhering to legal and organizational "
+        "boundaries."
+    )
+
     def __init__(self):
         # Initialize session and client objects
         self.sessions: typing.List[ClientSession] = []
@@ -53,6 +61,7 @@ class App:
     async def process_query(self, query: str):
         messages = [{'role': 'user', 'content': query}]
         response = self.anthropic.messages.create(
+            system=self.System,
             max_tokens=self.MaxTokens,
             model=self.Model,
             messages=messages, # type: ignore
@@ -91,6 +100,7 @@ class App:
                         }
                     )
                     response = self.anthropic.messages.create(
+                        system=self.System,
                         max_tokens=self.MaxTokens,
                         model=self.Model, 
                         tools=self.available_tools, # type: ignore
